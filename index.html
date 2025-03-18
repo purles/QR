@@ -128,6 +128,35 @@
         
         <div class="card" id="trackingSection" style="display: none;">
             <h2 class="section-title">Krok 2: Link z trackingiem do skrócenia w Rebrandly</h2>
+            <div style="margin-bottom: 15px;">
+                <button onclick="toggleParamsEditor()" id="toggleParamsBtn">Edytuj parametry</button>
+            </div>
+            
+            <div id="paramsEditor" style="display: none; margin-bottom: 20px; border: 1px solid #e9ecef; padding: 15px; border-radius: 4px;">
+                <h3 style="margin-top: 0;">Parametry śledzenia UTM</h3>
+                <div style="display: grid; grid-template-columns: 1fr 2fr auto; gap: 10px; margin-bottom: 10px; align-items: center;">
+                    <label for="utm_source">utm_source:</label>
+                    <input type="text" id="utm_source" placeholder="QR_kartonik_XXX" class="utm-param">
+                    <input type="checkbox" id="include_utm_source" checked style="width: 20px; height: 20px;" title="Włącz/wyłącz parametr">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 2fr auto; gap: 10px; margin-bottom: 10px; align-items: center;">
+                    <label for="utm_medium">utm_medium:</label>
+                    <input type="text" id="utm_medium" placeholder="scan" class="utm-param">
+                    <input type="checkbox" id="include_utm_medium" checked style="width: 20px; height: 20px;" title="Włącz/wyłącz parametr">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 2fr auto; gap: 10px; margin-bottom: 10px; align-items: center;">
+                    <label for="utm_campaign">utm_campaign:</label>
+                    <input type="text" id="utm_campaign" placeholder="QR_purlesworld_XXX" class="utm-param">
+                    <input type="checkbox" id="include_utm_campaign" checked style="width: 20px; height: 20px;" title="Włącz/wyłącz parametr">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 2fr auto; gap: 10px; margin-bottom: 10px; align-items: center;">
+                    <label for="utm_ID">utm_ID:</label>
+                    <input type="text" id="utm_ID" placeholder="purlesworld" class="utm-param">
+                    <input type="checkbox" id="include_utm_ID" checked style="width: 20px; height: 20px;" title="Włącz/wyłącz parametr">
+                </div>
+                <button onclick="updateTrackingLink()" style="margin-top: 10px;">Zaktualizuj link</button>
+            </div>
+            
             <div class="tracking-box" id="trackingLinkText"></div>
             <button class="copy-btn" onclick="copyToClipboard('trackingLinkText')">Kopiuj do schowka</button>
         </div>
@@ -141,6 +170,76 @@
     </div>
 
     <script>
+        // Funkcja do tworzenia linku z parametrami UTM
+        function createTrackingLink(productId) {
+            // Domyślne wartości
+            let defaultUtmSource = `QR_kartonik_${productId}`;
+            let defaultUtmMedium = 'scan';
+            let defaultUtmCampaign = `QR_purlesworld_${productId}`;
+            let defaultUtmId = 'purlesworld';
+            
+            // Pobierz wartości z pól i sprawdź czy parametr ma być włączony
+            const sourceInput = document.getElementById('utm_source');
+            const mediumInput = document.getElementById('utm_medium');
+            const campaignInput = document.getElementById('utm_campaign');
+            const idInput = document.getElementById('utm_ID');
+            
+            const includeSource = document.getElementById('include_utm_source').checked;
+            const includeMedium = document.getElementById('include_utm_medium').checked;
+            const includeCampaign = document.getElementById('include_utm_campaign').checked;
+            const includeId = document.getElementById('include_utm_ID').checked;
+            
+            // Ustaw placeholder dla pól na podstawie aktualnego productId
+            sourceInput.placeholder = defaultUtmSource;
+            campaignInput.placeholder = defaultUtmCampaign;
+            
+            // Zbierz wszystkie wybrane parametry UTM
+            const params = [];
+            
+            if (includeSource) {
+                const source = sourceInput.value.trim();
+                if (source) {
+                    params.push(`utm_source=${encodeURIComponent(source)}`);
+                } else {
+                    params.push(`utm_source=${encodeURIComponent(defaultUtmSource)}`);
+                }
+            }
+            
+            if (includeMedium) {
+                const medium = mediumInput.value.trim();
+                if (medium) {
+                    params.push(`utm_medium=${encodeURIComponent(medium)}`);
+                } else {
+                    params.push(`utm_medium=${encodeURIComponent(defaultUtmMedium)}`);
+                }
+            }
+            
+            if (includeCampaign) {
+                const campaign = campaignInput.value.trim();
+                if (campaign) {
+                    params.push(`utm_campaign=${encodeURIComponent(campaign)}`);
+                } else {
+                    params.push(`utm_campaign=${encodeURIComponent(defaultUtmCampaign)}`);
+                }
+            }
+            
+            if (includeId) {
+                const id = idInput.value.trim();
+                if (id) {
+                    params.push(`utm_ID=${encodeURIComponent(id)}`);
+                } else {
+                    params.push(`utm_ID=${encodeURIComponent(defaultUtmId)}`);
+                }
+            }
+            
+            // Zbuduj pełny link
+            if (params.length > 0) {
+                return `https://purlesworld.com/${productId}?${params.join('&')}`;
+            } else {
+                return `https://purlesworld.com/${productId}`;
+            }
+        }
+        
         function updateLinks() {
             const productId = document.getElementById('productId').value.trim();
             
@@ -152,7 +251,7 @@
                 
                 // Aktualizuj linki
                 const qrLink = `https://qr.purlesworld.com/${productId}`;
-                const trackingLink = `https://purlesworld.com/${productId}?utm_source=QR_kartonik_${productId}&utm_medium=scan&utm_campaign=QR_purlesworld_${productId}&utm_ID=purlesworld`;
+                const trackingLink = createTrackingLink(productId);
                 
                 document.getElementById('qrLinkText').textContent = qrLink;
                 document.getElementById('trackingLinkText').textContent = trackingLink;
@@ -161,6 +260,27 @@
                 document.getElementById('trackingSection').style.display = 'none';
                 document.getElementById('qrSection').style.display = 'none';
             }
+        }
+        
+        function toggleParamsEditor() {
+            const paramsEditor = document.getElementById('paramsEditor');
+            const toggleBtn = document.getElementById('toggleParamsBtn');
+            
+            if (paramsEditor.style.display === 'none') {
+                paramsEditor.style.display = 'block';
+                toggleBtn.textContent = 'Ukryj parametry';
+            } else {
+                paramsEditor.style.display = 'none';
+                toggleBtn.textContent = 'Edytuj parametry';
+            }
+        }
+        
+        function updateTrackingLink() {
+            const productId = document.getElementById('productId').value.trim();
+            if (!productId) return;
+            
+            const trackingLink = createTrackingLink(productId);
+            document.getElementById('trackingLinkText').textContent = trackingLink;
         }
         
         function copyToClipboard(elementId) {
@@ -193,7 +313,7 @@
                     element: canvas,
                     value: qrLink,
                     size: size,
-                    level: 'L' // Wysoki poziom korekcji błędów
+                    level: 'H' // Wysoki poziom korekcji błędów
                 });
                 
                 // Pokaż canvas
