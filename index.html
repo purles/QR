@@ -127,7 +127,7 @@
         </div>
         
         <div class="card" id="trackingSection" style="display: none;">
-            <h2 class="section-title">Krok 2: Link z trackingiem do skrócenia w Rebrandly</h2>
+            <h2 class="section-title">Krok 2: Link z trackingiem do skrócenia w <a href="https://qr.purles.pl/admin/" target="_blank">YOURLS</a></h2>
             <div style="margin-bottom: 15px;">
                 <button onclick="toggleParamsEditor()" id="toggleParamsBtn">Edytuj parametry</button>
             </div>
@@ -250,7 +250,7 @@
                 document.getElementById('qrSection').style.display = 'block';
                 
                 // Aktualizuj linki
-                const qrLink = `https://qr.purlesworld.com/${productId}`;
+                const qrLink = `https://qr.purles.pl/${productId}`;
                 const trackingLink = createTrackingLink(productId);
                 
                 document.getElementById('qrLinkText').textContent = qrLink;
@@ -302,7 +302,7 @@
             }
             
             try {
-                const qrLink = `https://qr.purlesworld.com/${productId}`;
+                const qrLink = `https://qr.purles.pl/${productId}`;
                 const canvas = document.getElementById('qrCanvas');
                 
                 // Stałe wartości
