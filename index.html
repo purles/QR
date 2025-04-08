@@ -144,6 +144,15 @@
             border-radius: 4px;
             color: #856404;
         }
+        .id-notice-warning {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            color: #721c24;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -167,11 +176,11 @@
                 <label for="productId">Wprowadź identyfikator produktu:</label>
                 <input type="text" id="productId" placeholder="np. 165" oninput="updateLinks()">
                 <div class="info">Ten identyfikator będzie użyty w linku QR oraz nazwie pliku</div>
-                <div id="idNoticeQR" class="id-notice" style="display: none;">
-                    Uwaga: Identyfikator zawiera kropkę, która zostanie zamieniona na podkreślnik "_" w kodzie QR.
+                <div id="idNoticeDot" class="id-notice" style="display: none;">
+                    Uwaga: Identyfikator zawiera kropkę, która zostanie usunięta w linku (Tilda pomija kropki).
                 </div>
-                <div id="idNoticeTilda" class="id-notice" style="display: none;">
-                    Uwaga: W linku śledzenia kropki zostały usunięte (Tilda pomija kropki).
+                <div id="idNoticeB2B" class="id-notice-warning" style="display: none;">
+                    <strong>WAŻNE:</strong> Dla produktu B2B dodano prefiks "p". Podczas dodawania skróconego linku w YOURLS, pamiętaj aby również wprowadzić ten prefiks!
                 </div>
             </div>
             
@@ -231,30 +240,31 @@
         let domainB2B = 'pro.purlesworld.com';
         let shortDomain = 'https://qr.purles.pl/';
         
-        // Funkcja do zamiany kropek na podkreślniki dla QR
-        function formatQrProductId(productId) {
-            // Sprawdź czy produktId zawiera kropkę
+        // Funkcja do usuwania kropek z ID (dla Tildy)
+        function formatTildaProductId(productId) {
+            // Sprawdź czy zawiera kropkę
             if (productId.includes('.')) {
-                // Pokaż informację o zamianie kropki
-                document.getElementById('idNoticeQR').style.display = 'block';
-                // Zamień kropkę na podkreślnik
-                return productId.replace(/\./g, '_');
+                document.getElementById('idNoticeDot').style.display = 'block';
+                // Usuń kropki
+                return productId.replace(/\./g, '');
             } else {
-                document.getElementById('idNoticeQR').style.display = 'none';
+                document.getElementById('idNoticeDot').style.display = 'none';
                 return productId;
             }
         }
         
-        // Funkcja do usuwania kropek dla linków śledzenia (zarówno B2B jak i B2C)
-        function formatTildaProductId(productId) {
-            // Sprawdź czy zawiera kropkę
-            if (productId.includes('.')) {
-                document.getElementById('idNoticeTilda').style.display = 'block';
-                // Usuń kropki
-                return productId.replace(/\./g, '');
+        // Funkcja do formatowania ID dla QR - z prefixem p dla B2B
+        function formatQrProductId(productId, mode) {
+            // Usuń kropki z identyfikatora
+            const cleanId = productId.replace(/\./g, '');
+            
+            // Dla produktów B2B dodaj prefix "p"
+            if (mode === 'b2b') {
+                document.getElementById('idNoticeB2B').style.display = 'block';
+                return 'p' + cleanId;
             } else {
-                document.getElementById('idNoticeTilda').style.display = 'none';
-                return productId;
+                document.getElementById('idNoticeB2B').style.display = 'none';
+                return cleanId;
             }
         }
         
@@ -307,8 +317,8 @@
             
             // Wyczyść pola i ukryj dodatkowe sekcje
             document.getElementById('productId').value = '';
-            document.getElementById('idNoticeQR').style.display = 'none';
-            document.getElementById('idNoticeTilda').style.display = 'none';
+            document.getElementById('idNoticeDot').style.display = 'none';
+            document.getElementById('idNoticeB2B').style.display = 'none';
             document.getElementById('qrLink').style.display = 'none';
             document.getElementById('trackingSection').style.display = 'none';
             document.getElementById('qrSection').style.display = 'none';
@@ -331,18 +341,18 @@
             // Wybierz domenę na podstawie trybu
             const domain = currentMode === 'b2c' ? domainB2C : domainB2B;
             
-            // Sformatuj identyfikator produktu dla Tildy (usuń kropki) - dla obu trybów
+            // Sformatuj identyfikator produktu dla Tildy (usuń kropki)
             const trackingId = formatTildaProductId(productId);
             
-            // Sformatuj identyfikator produktu dla QR (zamień kropki na podkreślniki)
-            const qrId = formatQrProductId(productId);
+            // Sformatuj identyfikator produktu dla QR (usuń kropki + ewentualnie dodaj prefix "p" dla B2B)
+            const qrId = formatQrProductId(trackingId, currentMode);
             
             // Domyślne wartości w zależności od trybu
             let defaultUtmSource = currentMode === 'b2c' ? 
-                `QR_kartonik_${qrId}` : `QR_kartonik_PRO_${qrId}`;
+                `QR_kartonik_${trackingId}` : `QR_kartonik_PRO_${trackingId}`;
             let defaultUtmMedium = 'scan';
             let defaultUtmCampaign = currentMode === 'b2c' ? 
-                `QR_purlesworld_${qrId}` : `QR_pro_purlesworld_${qrId}`;
+                `QR_purlesworld_${trackingId}` : `QR_pro_purlesworld_${trackingId}`;
             let defaultUtmId = currentMode === 'b2c' ? 'purlesworld' : 'pro_purlesworld';
             
             // Pobierz wartości z pól i sprawdź czy parametr ma być włączony
@@ -417,8 +427,11 @@
                 document.getElementById('trackingSection').style.display = 'block';
                 document.getElementById('qrSection').style.display = 'block';
                 
-                // Sformatuj identyfikator produktu (zamień kropki na podkreślniki) dla QR
-                const qrId = formatQrProductId(productId);
+                // Usuń kropki z ID
+                const tildaId = formatTildaProductId(productId);
+                
+                // Sformatuj identyfikator produktu dla QR (usuń kropki + ewentualnie dodaj prefix "p" dla B2B)
+                const qrId = formatQrProductId(tildaId, currentMode);
                 
                 // Aktualizuj linki
                 const qrLink = `${shortDomain}${qrId}`;
@@ -473,8 +486,12 @@
             }
             
             try {
-                // Sformatuj identyfikator produktu (zamień kropki na podkreślniki) dla QR
-                const qrId = formatQrProductId(productId);
+                // Usuń kropki z ID
+                const tildaId = formatTildaProductId(productId);
+                
+                // Sformatuj identyfikator produktu dla QR (usuń kropki + ewentualnie dodaj prefix "p" dla B2B)
+                const qrId = formatQrProductId(tildaId, currentMode);
+                
                 const qrLink = `${shortDomain}${qrId}`;
                 const canvas = document.getElementById('qrCanvas');
                 
