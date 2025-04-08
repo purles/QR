@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generator kodów QR dla Purlesworld</title>
+    <title id="pageTitle">Generator kodów QR dla Purlesworld</title>
     <!-- Używamy innej, bardziej niezawodnej biblioteki QR -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <style>
@@ -71,6 +71,17 @@
         button:hover {
             background-color: #45a049;
         }
+        .b2b-button {
+            background-color: #FF8C00;
+        }
+        .b2b-button:hover {
+            background-color: #E67E00;
+        }
+        .mode-select {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
         .copy-btn {
             background-color: #6c757d;
             font-size: 14px;
@@ -106,13 +117,43 @@
             margin-bottom: 20px;
             display: none;
         }
+        .mode-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 8px 15px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .mode-b2c {
+            color: #155724;
+            background-color: #d4edda;
+        }
+        .mode-b2b {
+            color: #856404;
+            background-color: #fff3cd;
+        }
+        #modeSelector {
+            margin-bottom: 30px;
+        }
     </style>
 </head>
 <body>
-    <h1>Generator kodów QR dla Purlesworld</h1>
+    <h1 id="mainTitle">Generator kodów QR dla Purlesworld</h1>
     
     <div class="container">
-        <div class="card">
+        <div class="card" id="modeSelector">
+            <h2 class="section-title">Wybierz typ produktu</h2>
+            <div class="mode-select">
+                <button id="b2cButton" onclick="selectMode('b2c')">Produkt B2C (purlesworld.com)</button>
+                <button id="b2bButton" class="b2b-button" onclick="selectMode('b2b')">Produkt B2B (pro.purlesworld.com)</button>
+            </div>
+            <div id="selectedMode" style="display: none; margin-top: 15px;">
+                <span class="mode-title" id="modeTitle"></span>
+            </div>
+        </div>
+        
+        <div class="card" id="productIdCard" style="display: none;">
             <h2 class="section-title">Krok 1: Identyfikator produktu</h2>
             <div class="input-group">
                 <label for="productId">Wprowadź identyfikator produktu:</label>
@@ -154,7 +195,7 @@
                     <input type="text" id="utm_ID" placeholder="purlesworld" class="utm-param">
                     <input type="checkbox" id="include_utm_ID" checked style="width: 20px; height: 20px;" title="Włącz/wyłącz parametr">
                 </div>
-                <button onclick="updateTrackingLink()" style="margin-top: 10px;">Zaktualizuj link</button>
+                <button onclick="updateTrackingLink()" style="margin-top: 10px;" id="updateTrackingBtn">Zaktualizuj link</button>
             </div>
             
             <div class="tracking-box" id="trackingLinkText"></div>
@@ -163,20 +204,97 @@
         
         <div class="card" id="qrSection" style="display: none;">
             <h2 class="section-title">Krok 3: Generowanie kodu QR</h2>
-            <button onclick="generateQRAndDownload()">Generuj i pobierz kod QR</button>
+            <button onclick="generateQRAndDownload()" id="generateQRBtn">Generuj i pobierz kod QR</button>
             <div id="statusMessage"></div>
             <canvas id="qrCanvas"></canvas>
         </div>
     </div>
 
     <script>
+        // Zmienne globalne
+        let currentMode = '';
+        let domainB2C = 'purlesworld.com';
+        let domainB2B = 'pro.purlesworld.com';
+        let shortDomain = 'https://qr.purles.pl/';
+        
+        // Funkcja do wyboru trybu B2B lub B2C
+        function selectMode(mode) {
+            currentMode = mode;
+            
+            // Pokaż sekcję identyfikatora produktu
+            document.getElementById('productIdCard').style.display = 'block';
+            
+            // Wyświetl wybrany tryb
+            const modeTitle = document.getElementById('modeTitle');
+            const selectedMode = document.getElementById('selectedMode');
+            selectedMode.style.display = 'block';
+            
+            // Ustaw tytuł strony i główny nagłówek
+            const pageTitle = document.getElementById('pageTitle');
+            const mainTitle = document.getElementById('mainTitle');
+            
+            // Aktualizuj wszystkie przyciski zgodnie z wybranym trybem
+            const allButtons = document.querySelectorAll('button:not(.copy-btn)');
+            const updateTrackingBtn = document.getElementById('updateTrackingBtn');
+            const generateQRBtn = document.getElementById('generateQRBtn');
+            
+            if (mode === 'b2c') {
+                modeTitle.textContent = 'Produkt B2C (purlesworld.com)';
+                modeTitle.className = 'mode-title mode-b2c';
+                pageTitle.textContent = 'Generator kodów QR dla Purlesworld - B2C';
+                mainTitle.textContent = 'Generator kodów QR dla Purlesworld - B2C';
+                
+                // Zielone przyciski dla B2C
+                allButtons.forEach(btn => {
+                    if (btn.id !== 'b2bButton' && btn.id !== 'b2cButton') {
+                        btn.classList.remove('b2b-button');
+                    }
+                });
+            } else { // b2b
+                modeTitle.textContent = 'Produkt B2B (pro.purlesworld.com)';
+                modeTitle.className = 'mode-title mode-b2b';
+                pageTitle.textContent = 'Generator kodów QR dla PRO.Purlesworld.com - B2B';
+                mainTitle.textContent = 'Generator kodów QR dla PRO.Purlesworld.com - B2B';
+                
+                // Pomarańczowe przyciski dla B2B
+                allButtons.forEach(btn => {
+                    if (btn.id !== 'b2bButton' && btn.id !== 'b2cButton') {
+                        btn.classList.add('b2b-button');
+                    }
+                });
+            }
+            
+            // Wyczyść pola i ukryj dodatkowe sekcje
+            document.getElementById('productId').value = '';
+            document.getElementById('qrLink').style.display = 'none';
+            document.getElementById('trackingSection').style.display = 'none';
+            document.getElementById('qrSection').style.display = 'none';
+            document.getElementById('qrCanvas').style.display = 'none';
+            
+            // Ustaw placeholdery UTM w zależności od trybu
+            if (mode === 'b2b') {
+                document.getElementById('utm_source').placeholder = 'QR_kartonik_PRO_XXX';
+                document.getElementById('utm_campaign').placeholder = 'QR_pro_purlesworld_XXX';
+                document.getElementById('utm_ID').placeholder = 'pro_purlesworld';
+            } else {
+                document.getElementById('utm_source').placeholder = 'QR_kartonik_XXX';
+                document.getElementById('utm_campaign').placeholder = 'QR_purlesworld_XXX';
+                document.getElementById('utm_ID').placeholder = 'purlesworld';
+            }
+        }
+        
         // Funkcja do tworzenia linku z parametrami UTM
         function createTrackingLink(productId) {
-            // Domyślne wartości
-            let defaultUtmSource = `QR_kartonik_${productId}`;
+            // Wybierz domenę na podstawie trybu
+            const domain = currentMode === 'b2c' ? domainB2C : domainB2B;
+            
+            // Domyślne wartości w zależności od trybu
+            let defaultUtmSource = currentMode === 'b2c' ? 
+                `QR_kartonik_${productId}` : `QR_kartonik_PRO_${productId}`;
             let defaultUtmMedium = 'scan';
-            let defaultUtmCampaign = `QR_purlesworld_${productId}`;
-            let defaultUtmId = 'purlesworld';
+            let defaultUtmCampaign = currentMode === 'b2c' ? 
+                `QR_purlesworld_${productId}` : `QR_pro_purlesworld_${productId}`;
+            let defaultUtmId = currentMode === 'b2c' ? 'purlesworld' : 'pro_purlesworld';
             
             // Pobierz wartości z pól i sprawdź czy parametr ma być włączony
             const sourceInput = document.getElementById('utm_source');
@@ -189,9 +307,10 @@
             const includeCampaign = document.getElementById('include_utm_campaign').checked;
             const includeId = document.getElementById('include_utm_ID').checked;
             
-            // Ustaw placeholder dla pól na podstawie aktualnego productId
+            // Ustaw placeholder dla pól na podstawie aktualnego productId i trybu
             sourceInput.placeholder = defaultUtmSource;
             campaignInput.placeholder = defaultUtmCampaign;
+            idInput.placeholder = defaultUtmId;
             
             // Zbierz wszystkie wybrane parametry UTM
             const params = [];
@@ -234,23 +353,23 @@
             
             // Zbuduj pełny link
             if (params.length > 0) {
-                return `https://purlesworld.com/${productId}?${params.join('&')}`;
+                return `https://${domain}/${productId}?${params.join('&')}`;
             } else {
-                return `https://purlesworld.com/${productId}`;
+                return `https://${domain}/${productId}`;
             }
         }
         
         function updateLinks() {
             const productId = document.getElementById('productId').value.trim();
             
-            if (productId) {
+            if (productId && currentMode) {
                 // Pokaż sekcje
                 document.getElementById('qrLink').style.display = 'block';
                 document.getElementById('trackingSection').style.display = 'block';
                 document.getElementById('qrSection').style.display = 'block';
                 
                 // Aktualizuj linki
-                const qrLink = `https://qr.purles.pl/${productId}`;
+                const qrLink = `${shortDomain}${productId}`;
                 const trackingLink = createTrackingLink(productId);
                 
                 document.getElementById('qrLinkText').textContent = qrLink;
@@ -302,7 +421,7 @@
             }
             
             try {
-                const qrLink = `https://qr.purles.pl/${productId}`;
+                const qrLink = `${shortDomain}${productId}`;
                 const canvas = document.getElementById('qrCanvas');
                 
                 // Stałe wartości
@@ -320,7 +439,8 @@
                 canvas.style.display = 'block';
                 
                 // Konwertuj do SVG i pobierz
-                createSVGFromCanvas(canvas, size, productId);
+                const suffix = currentMode === 'b2c' ? 'B2C' : 'B2B';
+                createSVGFromCanvas(canvas, size, `${productId}_${suffix}`);
                 
             } catch (err) {
                 console.error("Błąd podczas generowania kodu QR:", err);
