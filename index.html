@@ -77,15 +77,8 @@
         .b2b-button:hover {
             background-color: #E67E00;
         }
-        .custom-button {
-            background-color: #007BFF;
-        }
-        .custom-button:hover {
-            background-color: #0069D9;
-        }
         .mode-select {
             display: flex;
-            flex-wrap: wrap;
             gap: 15px;
             margin-bottom: 15px;
         }
@@ -140,10 +133,6 @@
             color: #856404;
             background-color: #fff3cd;
         }
-        .mode-custom {
-            color: #004085;
-            background-color: #cce5ff;
-        }
         #modeSelector {
             margin-bottom: 30px;
         }
@@ -176,17 +165,14 @@
                 <button id="b2cButton" onclick="selectMode('b2c')">Produkt B2C (purlesworld.com)</button>
                 <button id="b2bButton" class="b2b-button" onclick="selectMode('b2b')">Produkt B2B (pro.purlesworld.com)</button>
             </div>
-            <div class="mode-select" style="margin-top: 15px;">
-                <button id="customButton" class="custom-button" onclick="selectMode('custom')">Customowy QR</button>
-            </div>
             <div id="selectedMode" style="display: none; margin-top: 15px;">
                 <span class="mode-title" id="modeTitle"></span>
             </div>
         </div>
         
         <div class="card" id="productIdCard" style="display: none;">
-            <h2 class="section-title" id="step1Title">Krok 1: Identyfikator produktu</h2>
-            <div class="input-group" id="productIdGroup">
+            <h2 class="section-title">Krok 1: Identyfikator produktu</h2>
+            <div class="input-group">
                 <label for="productId">Wprowadź identyfikator produktu:</label>
                 <input type="text" id="productId" placeholder="np. 165" oninput="updateLinks()">
                 <div class="info">Ten identyfikator będzie użyty w linku QR oraz nazwie pliku</div>
@@ -196,12 +182,6 @@
                 <div id="idNoticeB2B" class="id-notice-warning" style="display: none;">
                     <strong>WAŻNE:</strong> Dla produktu B2B dodano prefiks "p". Podczas dodawania skróconego linku w YOURLS, pamiętaj aby również wprowadzić ten prefiks!
                 </div>
-            </div>
-            
-            <div class="input-group" id="customUrlGroup" style="display: none;">
-                <label for="customUrl">Wprowadź pełny URL:</label>
-                <input type="url" id="customUrl" placeholder="np. https://www.example.com" oninput="updateCustomLink()">
-                <div class="info">Ten URL będzie bezpośrednio użyty do generowania kodu QR</div>
             </div>
             
             <div id="qrLink" style="display: none;">
@@ -246,7 +226,7 @@
         </div>
         
         <div class="card" id="qrSection" style="display: none;">
-            <h2 class="section-title" id="qrStepTitle">Krok 3: Generowanie kodu QR</h2>
+            <h2 class="section-title">Krok 3: Generowanie kodu QR</h2>
             <button onclick="generateQRAndDownload()" id="generateQRBtn">Generuj i pobierz kod QR</button>
             <div id="statusMessage"></div>
             <canvas id="qrCanvas"></canvas>
@@ -288,7 +268,7 @@
             }
         }
         
-        // Funkcja do wyboru trybu B2B, B2C lub Custom
+        // Funkcja do wyboru trybu B2B lub B2C
         function selectMode(mode) {
             currentMode = mode;
             
@@ -304,105 +284,45 @@
             const pageTitle = document.getElementById('pageTitle');
             const mainTitle = document.getElementById('mainTitle');
             
-            // Pokaż/ukryj odpowiednie pola w zależności od trybu
-            const productIdGroup = document.getElementById('productIdGroup');
-            const customUrlGroup = document.getElementById('customUrlGroup');
-            const step1Title = document.getElementById('step1Title');
-            const trackingSection = document.getElementById('trackingSection');
-            const qrStepTitle = document.getElementById('qrStepTitle');
-            
-            // Domyślnie ukryj sekcje
-            document.getElementById('qrLink').style.display = 'none';
-            document.getElementById('trackingSection').style.display = 'none';
-            document.getElementById('qrSection').style.display = 'none';
-            document.getElementById('qrCanvas').style.display = 'none';
-            
             // Aktualizuj wszystkie przyciski zgodnie z wybranym trybem
-            const allButtons = document.querySelectorAll('button:not(.copy-btn):not(#b2cButton):not(#b2bButton):not(#customButton)');
+            const allButtons = document.querySelectorAll('button:not(.copy-btn)');
             const updateTrackingBtn = document.getElementById('updateTrackingBtn');
             const generateQRBtn = document.getElementById('generateQRBtn');
             
-            if (mode === 'custom') {
-                // Ustawienia dla trybu Custom
-                modeTitle.textContent = 'Customowy QR';
-                modeTitle.className = 'mode-title mode-custom';
-                pageTitle.textContent = 'Generator kodów QR - Customowy URL';
-                mainTitle.textContent = 'Generator kodów QR - Customowy URL';
-                
-                // Pokaż pole na customowy URL, ukryj pole na ID produktu
-                productIdGroup.style.display = 'none';
-                customUrlGroup.style.display = 'block';
-                
-                // Zmień tytuł kroku 1
-                step1Title.textContent = 'Krok 1: Wprowadź URL';
-                
-                // Ukryj sekcję trackingu (nie ma zastosowania w tym trybie)
-                trackingSection.style.display = 'none';
-                
-                // Zmień tytuł kroku generowania QR
-                qrStepTitle.textContent = 'Krok 2: Generowanie kodu QR';
-                
-                // Pokaż sekcję QR od razu
-                document.getElementById('qrSection').style.display = 'block';
-                
-                // Niebieskie przyciski dla Custom
-                allButtons.forEach(btn => {
-                    btn.classList.remove('b2b-button');
-                    btn.classList.add('custom-button');
-                });
-                
-            } else if (mode === 'b2c') {
-                // Ustawienia dla trybu B2C
+            if (mode === 'b2c') {
                 modeTitle.textContent = 'Produkt B2C (purlesworld.com)';
                 modeTitle.className = 'mode-title mode-b2c';
                 pageTitle.textContent = 'Generator kodów QR dla Purlesworld - B2C';
                 mainTitle.textContent = 'Generator kodów QR dla Purlesworld - B2C';
                 
-                // Pokaż pole na ID produktu, ukryj pole na customowy URL
-                productIdGroup.style.display = 'block';
-                customUrlGroup.style.display = 'none';
-                
-                // Przywróć oryginalny tytuł kroku 1
-                step1Title.textContent = 'Krok 1: Identyfikator produktu';
-                
-                // Przywróć oryginalny tytuł kroku generowania QR
-                qrStepTitle.textContent = 'Krok 3: Generowanie kodu QR';
-                
                 // Zielone przyciski dla B2C
                 allButtons.forEach(btn => {
-                    btn.classList.remove('b2b-button');
-                    btn.classList.remove('custom-button');
+                    if (btn.id !== 'b2bButton' && btn.id !== 'b2cButton') {
+                        btn.classList.remove('b2b-button');
+                    }
                 });
-                
             } else { // b2b
-                // Ustawienia dla trybu B2B
                 modeTitle.textContent = 'Produkt B2B (pro.purlesworld.com)';
                 modeTitle.className = 'mode-title mode-b2b';
                 pageTitle.textContent = 'Generator kodów QR dla PRO.Purlesworld.com - B2B';
                 mainTitle.textContent = 'Generator kodów QR dla PRO.Purlesworld.com - B2B';
                 
-                // Pokaż pole na ID produktu, ukryj pole na customowy URL
-                productIdGroup.style.display = 'block';
-                customUrlGroup.style.display = 'none';
-                
-                // Przywróć oryginalny tytuł kroku 1
-                step1Title.textContent = 'Krok 1: Identyfikator produktu';
-                
-                // Przywróć oryginalny tytuł kroku generowania QR
-                qrStepTitle.textContent = 'Krok 3: Generowanie kodu QR';
-                
                 // Pomarańczowe przyciski dla B2B
                 allButtons.forEach(btn => {
-                    btn.classList.add('b2b-button');
-                    btn.classList.remove('custom-button');
+                    if (btn.id !== 'b2bButton' && btn.id !== 'b2cButton') {
+                        btn.classList.add('b2b-button');
+                    }
                 });
             }
             
-            // Wyczyść pola
+            // Wyczyść pola i ukryj dodatkowe sekcje
             document.getElementById('productId').value = '';
-            document.getElementById('customUrl').value = '';
             document.getElementById('idNoticeDot').style.display = 'none';
             document.getElementById('idNoticeB2B').style.display = 'none';
+            document.getElementById('qrLink').style.display = 'none';
+            document.getElementById('trackingSection').style.display = 'none';
+            document.getElementById('qrSection').style.display = 'none';
+            document.getElementById('qrCanvas').style.display = 'none';
             
             // Ustaw placeholdery UTM w zależności od trybu
             if (mode === 'b2b') {
@@ -413,38 +333,6 @@
                 document.getElementById('utm_source').placeholder = 'QR_kartonik_XXX';
                 document.getElementById('utm_campaign').placeholder = 'QR_purlesworld_XXX';
                 document.getElementById('utm_ID').placeholder = 'purlesworld';
-            }
-        }
-        
-        // Funkcja do aktualizacji linku dla trybu Custom
-        function updateCustomLink() {
-            const customUrl = document.getElementById('customUrl').value.trim();
-            
-            if (customUrl) {
-                // Pokaż sekcję QR
-                document.getElementById('qrSection').style.display = 'block';
-                
-                // Walidacja URL
-                let validUrl;
-                try {
-                    validUrl = new URL(customUrl);
-                } catch (e) {
-                    // Jeśli URL nie zawiera protokołu, dodaj http://
-                    if (!customUrl.startsWith('http://') && !customUrl.startsWith('https://')) {
-                        validUrl = new URL('https://' + customUrl);
-                    } else {
-                        // Nieprawidłowy URL
-                        document.getElementById('qrSection').style.display = 'none';
-                        return;
-                    }
-                }
-                
-                // Ustaw link QR bezpośrednio na wprowadzony URL
-                document.getElementById('qrLinkText').textContent = validUrl.href;
-                document.getElementById('qrLink').style.display = 'block';
-            } else {
-                document.getElementById('qrLink').style.display = 'none';
-                document.getElementById('qrSection').style.display = 'none';
             }
         }
         
@@ -533,7 +421,7 @@
         function updateLinks() {
             const productId = document.getElementById('productId').value.trim();
             
-            if (productId && (currentMode === 'b2c' || currentMode === 'b2b')) {
+            if (productId && currentMode) {
                 // Pokaż sekcje
                 document.getElementById('qrLink').style.display = 'block';
                 document.getElementById('trackingSection').style.display = 'block';
@@ -551,7 +439,7 @@
                 
                 document.getElementById('qrLinkText').textContent = qrLink;
                 document.getElementById('trackingLinkText').textContent = trackingLink;
-            } else if (currentMode !== 'custom') {
+            } else {
                 document.getElementById('qrLink').style.display = 'none';
                 document.getElementById('trackingSection').style.display = 'none';
                 document.getElementById('qrSection').style.display = 'none';
@@ -590,65 +478,21 @@
         }
         
         function generateQRAndDownload() {
-            let qrLink = '';
-            let fileName = '';
+            const productId = document.getElementById('productId').value.trim();
             
-            if (currentMode === 'custom') {
-                // W trybie Custom używamy bezpośrednio wprowadzonego URL
-                const customUrl = document.getElementById('customUrl').value.trim();
-                
-                if (!customUrl) {
-                    showStatus('Proszę wprowadzić URL!', 'error');
-                    return;
-                }
-                
-                // Walidacja URL
-                try {
-                    const url = new URL(customUrl);
-                    qrLink = url.href;
-                    
-                    // Ustal nazwę pliku na podstawie domeny
-                    fileName = `QR_Custom_${url.hostname}`;
-                } catch (e) {
-                    try {
-                        // Jeśli URL nie zawiera protokołu, dodaj https://
-                        if (!customUrl.startsWith('http://') && !customUrl.startsWith('https://')) {
-                            const url = new URL('https://' + customUrl);
-                            qrLink = url.href;
-                            fileName = `QR_Custom_${url.hostname}`;
-                        } else {
-                            showStatus('Nieprawidłowy URL!', 'error');
-                            return;
-                        }
-                    } catch (err) {
-                        showStatus('Nieprawidłowy URL! Sprawdź format.', 'error');
-                        return;
-                    }
-                }
-                
-            } else {
-                // W trybie B2C i B2B używamy ID produktu
-                const productId = document.getElementById('productId').value.trim();
-                
-                if (!productId) {
-                    showStatus('Proszę wprowadzić identyfikator produktu!', 'error');
-                    return;
-                }
-                
+            if (!productId) {
+                showStatus('Proszę wprowadzić identyfikator produktu!', 'error');
+                return;
+            }
+            
+            try {
                 // Usuń kropki z ID
                 const tildaId = formatTildaProductId(productId);
                 
                 // Sformatuj identyfikator produktu dla QR (usuń kropki + ewentualnie dodaj prefix "p" dla B2B)
                 const qrId = formatQrProductId(tildaId, currentMode);
                 
-                qrLink = `${shortDomain}${qrId}`;
-                
-                // Ustaw nazwę pliku
-                const suffix = currentMode === 'b2c' ? 'B2C' : 'B2B';
-                fileName = `QR_${productId}_${suffix}`;
-            }
-            
-            try {
+                const qrLink = `${shortDomain}${qrId}`;
                 const canvas = document.getElementById('qrCanvas');
                 
                 // Stałe wartości
@@ -666,9 +510,97 @@
                 canvas.style.display = 'block';
                 
                 // Konwertuj do SVG i pobierz
-                createSVGFromCanvas(canvas, size, fileName);
+                const suffix = currentMode === 'b2c' ? 'B2C' : 'B2B';
+                // Używamy oryginalnego ID (z kropkami) w nazwie pliku
+                createSVGFromCanvas(canvas, size, `${productId}_${suffix}`);
                 
             } catch (err) {
                 console.error("Błąd podczas generowania kodu QR:", err);
                 showStatus('Błąd podczas generowania kodu QR: ' + err.message, 'error');
             }
+        }
+        
+        function createSVGFromCanvas(canvas, size, productId) {
+            try {
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, size, size);
+                const data = imageData.data;
+                const pixelSize = 1;
+                
+                // Funkcja pomocnicza do sprawdzania czy piksel jest czarny
+                function isBlack(x, y) {
+                    const idx = (y * size + x) * 4;
+                    return data[idx] < 128; // Jeśli R < 128, uznajemy za czarny
+                }
+                
+                // Generuj SVG bezpośrednio z danych obrazu
+                let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}">\n`;
+                svgContent += `  <rect width="${size}" height="${size}" fill="white"/>\n`;
+                
+                // Optymalizacja - grupowanie pikseli w prostokąty
+                for (let y = 0; y < size; y += pixelSize) {
+                    let inRect = false;
+                    let rectStart = 0;
+                    
+                    for (let x = 0; x < size; x += pixelSize) {
+                        const black = isBlack(x, y);
+                        
+                        if (black && !inRect) {
+                            // Początek nowego prostokąta
+                            rectStart = x;
+                            inRect = true;
+                        } else if (!black && inRect) {
+                            // Koniec prostokąta
+                            svgContent += `  <rect x="${rectStart}" y="${y}" width="${x - rectStart}" height="${pixelSize}" fill="black"/>\n`;
+                            inRect = false;
+                        }
+                    }
+                    
+                    // Jeśli prostokąt kończy się na prawej krawędzi
+                    if (inRect) {
+                        svgContent += `  <rect x="${rectStart}" y="${y}" width="${size - rectStart}" height="${pixelSize}" fill="black"/>\n`;
+                    }
+                }
+                
+                svgContent += '</svg>';
+                
+                // Pobierz plik SVG
+                const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `QR_${productId}.svg`;
+                document.body.appendChild(a);
+                a.click();
+                
+                // Cleanup
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 100);
+                
+                showStatus('Kod QR został wygenerowany i pobrany pomyślnie!', 'success');
+                
+            } catch (err) {
+                console.error("Błąd podczas konwersji do SVG:", err);
+                showStatus('Błąd podczas konwersji do SVG: ' + err.message, 'error');
+            }
+        }
+        
+        function showStatus(message, type) {
+            const statusElement = document.getElementById('statusMessage');
+            statusElement.textContent = message;
+            statusElement.className = type;
+            statusElement.style.display = 'block';
+            
+            // Automatycznie ukryj komunikat po 5 sekundach, jeśli to sukces
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusElement.style.display = 'none';
+                }, 5000);
+            }
+        }
+    </script>
+</body>
+</html>
