@@ -163,7 +163,7 @@
             <h2 class="section-title">Wybierz typ produktu</h2>
             <div class="mode-select">
                 <button id="b2cButton" onclick="selectMode('b2c')">Produkt B2C (purlesworld.com)</button>
-                <button id="b2bButton" class="b2b-button" onclick="selectMode('b2b')">Produkt B2B (pro.purlesworld.com)</button>
+                <button id="b2bButton" class="b2b-button" onclick="selectMode('b2b')">Produkt B2B (purlespro.com)</button>
             </div>
             <div id="selectedMode" style="display: none; margin-top: 15px;">
                 <span class="mode-title" id="modeTitle"></span>
@@ -237,7 +237,7 @@
         // Zmienne globalne
         let currentMode = '';
         let domainB2C = 'purlesworld.com';
-        let domainB2B = 'pro.purlesworld.com';
+        let domainB2B = 'purlespro.com';
         let shortDomain = 'https://qr.purles.pl/';
         
         // Funkcja do usuwania kropek z ID (dla Tildy)
@@ -302,10 +302,10 @@
                     }
                 });
             } else { // b2b
-                modeTitle.textContent = 'Produkt B2B (pro.purlesworld.com)';
+                modeTitle.textContent = 'Produkt B2B (purlespro.com)';
                 modeTitle.className = 'mode-title mode-b2b';
-                pageTitle.textContent = 'Generator kodów QR dla PRO.Purlesworld.com - B2B';
-                mainTitle.textContent = 'Generator kodów QR dla PRO.Purlesworld.com - B2B';
+                pageTitle.textContent = 'Generator kodów QR dla purlespro.com - B2B';
+                mainTitle.textContent = 'Generator kodów QR dla purlespro.com - B2B';
                 
                 // Pomarańczowe przyciski dla B2B
                 allButtons.forEach(btn => {
