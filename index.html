@@ -7,157 +7,342 @@
     <!-- Używamy innej, bardziej niezawodnej biblioteki QR -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 0 auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #4E3261 0%, #6B4C7A 100%);
+            min-height: 100vh;
             padding: 20px;
             line-height: 1.6;
         }
+        
+        /* Header z logo i tytułem */
+        .header-bubble {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 40px;
+            margin: 0 auto 30px;
+            max-width: 600px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .header-bubble img {
+            height: 50px;
+            flex-shrink: 0;
+        }
+        
+        .header-bubble h1 {
+            color: #4E3261;
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+            flex: 1;
+        }
+        
+        /* Footer */
+        .footer-bubble {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 40px;
+            margin: 30px auto 0;
+            max-width: 600px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+        
+        .footer-bubble p {
+            color: #4E3261;
+            font-size: 14px;
+            margin: 0;
+        }
+        
+        .footer-bubble a {
+            color: #4E3261;
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+        
+        .footer-bubble a:hover {
+            border-bottom-color: #4E3261;
+        }
+        
+        /* Kontener główny */
         .container {
+            max-width: 600px;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 25px;
+            gap: 20px;
         }
+        
+        /* Karty */
         .card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
+        
         .section-title {
             margin-top: 0;
-            margin-bottom: 15px;
-            color: #333;
+            margin-bottom: 20px;
+            color: #4E3261;
+            font-size: 20px;
+            font-weight: 600;
         }
+        
+        /* Inputy */
         .input-group {
             display: flex;
             flex-direction: column;
             gap: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
+        
         label {
-            font-weight: bold;
+            font-weight: 600;
+            color: #4E3261;
+            font-size: 14px;
         }
+        
         input {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 12px 15px;
+            border: 2px solid #E7E5E6;
+            border-radius: 8px;
             font-size: 16px;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
         }
+        
+        input:focus {
+            outline: none;
+            border-color: #4E3261;
+        }
+        
+        /* Boksy z linkami */
         .tracking-box {
-            background-color: #f8f9fa;
+            background-color: #F3E8E1;
             padding: 15px;
-            border-radius: 4px;
-            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            border: 2px solid #E7E5E6;
             margin-top: 10px;
             word-break: break-all;
+            color: #4E3261;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
         }
+        
         .tracking-box-title {
-            font-weight: bold;
-            margin-bottom: 5px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #4E3261;
         }
+        
+        /* Przyciski */
         button {
-            padding: 12px 20px;
-            background-color: #4CAF50;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #4E3261 0%, #6B4C7A 100%);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 16px;
-            font-weight: bold;
-            align-self: flex-start;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            font-family: inherit;
         }
+        
         button:hover {
-            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(78, 50, 97, 0.3);
         }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
         .b2b-button {
-            background-color: #FF8C00;
+            background: linear-gradient(135deg, #FF8C00 0%, #FFA500 100%);
         }
+        
         .b2b-button:hover {
-            background-color: #E67E00;
+            box-shadow: 0 4px 12px rgba(255, 140, 0, 0.3);
         }
+        
         .mode-select {
             display: flex;
             gap: 15px;
             margin-bottom: 15px;
+            flex-wrap: wrap;
         }
+        
+        .mode-select button {
+            flex: 1;
+            min-width: 200px;
+        }
+        
         .copy-btn {
-            background-color: #6c757d;
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
             font-size: 14px;
-            padding: 6px 12px;
+            padding: 8px 16px;
             margin-top: 10px;
         }
+        
         .copy-btn:hover {
-            background-color: #5a6268;
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
         }
+        
+        /* Informacje */
         .info {
             color: #6c757d;
-            font-size: 14px;
-            margin-top: 10px;
+            font-size: 13px;
+            margin-top: 5px;
+            font-style: italic;
         }
+        
+        /* Statusy i komunikaty */
         #statusMessage {
             margin-top: 15px;
-            padding: 10px;
-            border-radius: 4px;
+            padding: 12px 15px;
+            border-radius: 8px;
             display: none;
+            font-weight: 500;
         }
+        
         .success {
             background-color: #d4edda;
             color: #155724;
-            border: 1px solid #c3e6cb;
+            border: 2px solid #c3e6cb;
         }
+        
         .error {
             background-color: #f8d7da;
             color: #721c24;
-            border: 1px solid #f5c6cb;
+            border: 2px solid #f5c6cb;
         }
+        
+        /* Canvas dla QR */
         #qrCanvas {
-            margin-top: 20px;
-            margin-bottom: 20px;
+            margin: 20px auto;
             display: none;
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
+        
+        /* Tryby */
         .mode-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 20px;
-            padding: 8px 15px;
-            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 8px;
             display: inline-block;
         }
+        
         .mode-b2c {
             color: #155724;
             background-color: #d4edda;
+            border: 2px solid #c3e6cb;
         }
+        
         .mode-b2b {
             color: #856404;
             background-color: #fff3cd;
+            border: 2px solid #ffeeba;
         }
+        
         #modeSelector {
-            margin-bottom: 30px;
+            background: white;
         }
+        
+        /* Notki */
         .id-notice {
             margin-top: 10px;
-            padding: 8px 12px;
+            padding: 10px 15px;
             background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            border-radius: 4px;
+            border: 2px solid #ffeeba;
+            border-radius: 8px;
             color: #856404;
+            font-size: 14px;
         }
+        
         .id-notice-warning {
             margin-top: 10px;
-            padding: 8px 12px;
+            padding: 10px 15px;
             background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 4px;
+            border: 2px solid #f5c6cb;
+            border-radius: 8px;
             color: #721c24;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        /* Edytor parametrów */
+        #paramsEditor {
+            background-color: #F3E8E1;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #E7E5E6;
+            margin-bottom: 20px;
+        }
+        
+        #paramsEditor h3 {
+            color: #4E3261;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        #paramsEditor input[type="text"] {
+            background: white;
+        }
+        
+        /* Responsywność */
+        @media (max-width: 640px) {
+            .header-bubble {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+            }
+            
+            .header-bubble h1 {
+                font-size: 20px;
+            }
+            
+            .mode-select {
+                flex-direction: column;
+            }
+            
+            .mode-select button {
+                min-width: 100%;
+            }
+            
+            .footer-bubble {
+                padding: 15px 20px;
+            }
+            
+            .footer-bubble p {
+                font-size: 13px;
+            }
         }
     </style>
 </head>
 <body>
-<img src="https://purles.pl/wp-content/uploads/2022/04/logo.png" alt="Purles Logo" class="logo" height="50px" align="center">
-    <h1 id="mainTitle" align="center">   Generator kodów QR dla Purlesworld</h1>
+    <!-- Header -->
+    <div class="header-bubble">
+        <img src="https://sklep.purles.pl/data/gfx/mask/pol/logo_1_big.svg" alt="Purles Logo">
+        <h1 id="mainTitle">Generator kodów QR dla Purlesworld</h1>
+    </div>
     
     <div class="container">
         <div class="card" id="modeSelector">
@@ -192,13 +377,13 @@
         </div>
         
         <div class="card" id="trackingSection" style="display: none;">
-            <h2 class="section-title">Krok 2: Link z trackingiem do skrócenia w <a href="https://qr.purles.pl/admin/" target="_blank">YOURLS</a></h2>
+            <h2 class="section-title">Krok 2: Link z trackingiem do skrócenia w <a href="https://qr.purles.pl/admin/" target="_blank" style="color: #4E3261;">YOURLS</a></h2>
             <div style="margin-bottom: 15px;">
                 <button onclick="toggleParamsEditor()" id="toggleParamsBtn">Edytuj parametry</button>
             </div>
             
-            <div id="paramsEditor" style="display: none; margin-bottom: 20px; border: 1px solid #e9ecef; padding: 15px; border-radius: 4px;">
-                <h3 style="margin-top: 0;">Parametry śledzenia UTM</h3>
+            <div id="paramsEditor" style="display: none;">
+                <h3>Parametry śledzenia UTM</h3>
                 <div style="display: grid; grid-template-columns: 1fr 2fr auto; gap: 10px; margin-bottom: 10px; align-items: center;">
                     <label for="utm_source">utm_source:</label>
                     <input type="text" id="utm_source" placeholder="QR_kartonik_XXX" class="utm-param">
@@ -233,9 +418,12 @@
             <canvas id="qrCanvas"></canvas>
         </div>
     </div>
-   <p style="text-align: center; color: #8B5CF6;">
- Designed by KS for <strong><a href="https://www.purles.pl" style="color: #8B5CF6; text-decoration: none;">Purlés</a></strong>
-</p>
+    
+    <!-- Footer -->
+    <div class="footer-bubble">
+        <p>Designed by <strong>Kornel Skąpski</strong> for <a href="https://www.purles.pl" target="_blank">Purlés</a></p>
+    </div>
+
     <script>
         // Zmienne globalne
         let currentMode = '';
