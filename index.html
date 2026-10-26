@@ -448,23 +448,23 @@
                 <h3>Parametry śledzenia UTM</h3>
                 <div style="display: grid; grid-template-columns: 1fr 2fr auto; gap: 10px; margin-bottom: 10px; align-items: center;">
                     <label for="utm_source">utm_source:</label>
-                    <input type="text" id="utm_source" placeholder="QR_kartonik_XXX" class="utm-param">
+                    <input type="text" id="utm_source" placeholder="opakowanie" class="utm-param">
                     <input type="checkbox" id="include_utm_source" checked style="width: 20px; height: 20px;" title="Włącz/wyłącz parametr">
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 2fr auto; gap: 10px; margin-bottom: 10px; align-items: center;">
                     <label for="utm_medium">utm_medium:</label>
-                    <input type="text" id="utm_medium" placeholder="scan" class="utm-param">
+                    <input type="text" id="utm_medium" placeholder="qr_code" class="utm-param">
                     <input type="checkbox" id="include_utm_medium" checked style="width: 20px; height: 20px;" title="Włącz/wyłącz parametr">
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 2fr auto; gap: 10px; margin-bottom: 10px; align-items: center;">
                     <label for="utm_campaign">utm_campaign:</label>
-                    <input type="text" id="utm_campaign" placeholder="QR_purlesworld_XXX" class="utm-param">
+                    <input type="text" id="utm_campaign" placeholder="e_ulotka" class="utm-param">
                     <input type="checkbox" id="include_utm_campaign" checked style="width: 20px; height: 20px;" title="Włącz/wyłącz parametr">
                 </div>
                 <div style="display: grid; grid-template-columns: 1fr 2fr auto; gap: 10px; margin-bottom: 10px; align-items: center;">
-                    <label for="utm_ID">utm_ID:</label>
-                    <input type="text" id="utm_ID" placeholder="purlesworld" class="utm-param">
-                    <input type="checkbox" id="include_utm_ID" checked style="width: 20px; height: 20px;" title="Włącz/wyłącz parametr">
+                    <label for="utm_content">utm_content:</label>
+                    <input type="text" id="utm_content" placeholder="XXX" class="utm-param">
+                    <input type="checkbox" id="include_utm_content" checked style="width: 20px; height: 20px;" title="Włącz/wyłącz parametr">
                 </div>
                 <button onclick="updateTrackingLink()" style="margin-top: 10px;" id="updateTrackingBtn">Zaktualizuj link</button>
             </div>
@@ -583,16 +583,8 @@
             document.getElementById('qrSection').style.display = 'none';
             document.getElementById('qrCanvas').style.display = 'none';
             
-            // Ustaw placeholdery UTM w zależności od trybu
-            if (mode === 'b2b') {
-                document.getElementById('utm_source').placeholder = 'QR_kartonik_PRO_XXX';
-                document.getElementById('utm_campaign').placeholder = 'QR_pro_purlesworld_XXX';
-                document.getElementById('utm_ID').placeholder = 'pro_purlesworld';
-            } else {
-                document.getElementById('utm_source').placeholder = 'QR_kartonik_XXX';
-                document.getElementById('utm_campaign').placeholder = 'QR_purlesworld_XXX';
-                document.getElementById('utm_ID').placeholder = 'purlesworld';
-            }
+            // Ustaw placeholder utm_content w zależności od trybu (B2B z prefiksem "p", jak kod w YOURLS)
+            document.getElementById('utm_content').placeholder = mode === 'b2b' ? 'pXXX' : 'XXX';
         }
         
         // Funkcja do tworzenia linku z parametrami UTM
@@ -606,35 +598,34 @@
             // Sformatuj identyfikator produktu dla QR (usuń kropki + ewentualnie dodaj prefix "p" dla B2B)
             const qrId = formatQrProductId(trackingId, currentMode);
             
-            // Domyślne wartości w zależności od trybu
-            let defaultUtmSource = currentMode === 'b2c' ? 
-                `QR_kartonik_${trackingId}` : `QR_kartonik_PRO_${trackingId}`;
-            let defaultUtmMedium = 'scan';
-            let defaultUtmCampaign = currentMode === 'b2c' ? 
-                `QR_purlesworld_${trackingId}` : `QR_pro_purlesworld_${trackingId}`;
-            let defaultUtmId = currentMode === 'b2c' ? 'purlesworld' : 'pro_purlesworld';
-            
+            // Domyślne wartości (schemat UTM pod GA4 od 10.2026, ten sam dla B2C i B2B):
+            // stałe source/medium/campaign, numer produktu (kod z YOURLS) w utm_content, tylko małe litery
+            let defaultUtmSource = 'opakowanie';
+            let defaultUtmMedium = 'qr_code';
+            let defaultUtmCampaign = 'e_ulotka';
+            let defaultUtmContent = qrId;
+
             // Pobierz wartości z pól i sprawdź czy parametr ma być włączony
             const sourceInput = document.getElementById('utm_source');
             const mediumInput = document.getElementById('utm_medium');
             const campaignInput = document.getElementById('utm_campaign');
-            const idInput = document.getElementById('utm_ID');
-            
+            const contentInput = document.getElementById('utm_content');
+
             const includeSource = document.getElementById('include_utm_source').checked;
             const includeMedium = document.getElementById('include_utm_medium').checked;
             const includeCampaign = document.getElementById('include_utm_campaign').checked;
-            const includeId = document.getElementById('include_utm_ID').checked;
-            
+            const includeContent = document.getElementById('include_utm_content').checked;
+
             // Ustaw placeholder dla pól na podstawie aktualnego productId i trybu
             sourceInput.placeholder = defaultUtmSource;
             campaignInput.placeholder = defaultUtmCampaign;
-            idInput.placeholder = defaultUtmId;
-            
-            // Zbierz wszystkie wybrane parametry UTM
+            contentInput.placeholder = defaultUtmContent;
+
+            // Zbierz wszystkie wybrane parametry UTM (GA4 rozróżnia wielkość liter, więc wszystko małymi)
             const params = [];
-            
+
             if (includeSource) {
-                const source = sourceInput.value.trim();
+                const source = sourceInput.value.trim().toLowerCase();
                 if (source) {
                     params.push(`utm_source=${encodeURIComponent(source)}`);
                 } else {
@@ -643,7 +634,7 @@
             }
             
             if (includeMedium) {
-                const medium = mediumInput.value.trim();
+                const medium = mediumInput.value.trim().toLowerCase();
                 if (medium) {
                     params.push(`utm_medium=${encodeURIComponent(medium)}`);
                 } else {
@@ -652,7 +643,7 @@
             }
             
             if (includeCampaign) {
-                const campaign = campaignInput.value.trim();
+                const campaign = campaignInput.value.trim().toLowerCase();
                 if (campaign) {
                     params.push(`utm_campaign=${encodeURIComponent(campaign)}`);
                 } else {
@@ -660,12 +651,12 @@
                 }
             }
             
-            if (includeId) {
-                const id = idInput.value.trim();
-                if (id) {
-                    params.push(`utm_ID=${encodeURIComponent(id)}`);
+            if (includeContent) {
+                const content = contentInput.value.trim().toLowerCase();
+                if (content) {
+                    params.push(`utm_content=${encodeURIComponent(content)}`);
                 } else {
-                    params.push(`utm_ID=${encodeURIComponent(defaultUtmId)}`);
+                    params.push(`utm_content=${encodeURIComponent(defaultUtmContent)}`);
                 }
             }
             
